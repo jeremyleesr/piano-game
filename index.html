@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Visual Grand Staff – Foundation</title>
+
+<style>
+html, body {
+  margin: 0;
+  padding: 0;
+  background: #0b2a1b;
+  overflow: hidden;
+}
+
+/* Top control bar */
+#top-bar {
+  height: 56px;
+  background: #0f3a26;
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+}
+
+#start-btn {
+  background: #3aff8a;
+  color: #000;
+  font-weight: bold;
+  border: none;
+  border-radius: 18px;
+  padding: 8px 18px;
+  font-size: 16px;
+}
+
+/* Staff container */
+#staff-container {
+  background: #ffffff;
+  width: 100vw;
+  height: 28vh; /* ~30% max as discussed */
+  position: relative;
+}
+
+/* Canvas fills the staff area */
+canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+</style>
+</head>
+
+<body>
+
+<div id="top-bar">
+  <button id="start-btn">GO</button>
+</div>
+
+<div id="staff-container">
+  <canvas id="staff"></canvas>
+</div>
+
+<script>
+const canvas = document.getElementById("staff");
+const ctx = canvas.getContext("2d");
+
+function resize() {
+  canvas.width = canvas.offsetWidth;
+  canvas.height = canvas.offsetHeight;
+  drawStaff();
+}
+
+function drawStaff() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  const lineSpacing = canvas.height / 12;
+  const noteRadius = lineSpacing / 2;
+
+  ctx.strokeStyle = "#000";
+  ctx.lineWidth = 2;
+
+  // Treble staff (top 5 lines)
+  for (let i = 0; i < 5; i++) {
+    const y = lineSpacing * (2 + i);
+    ctx.beginPath();
+    ctx.moveTo(0, y);
+    ctx.lineTo(canvas.width, y);
+    ctx.stroke();
+  }
+
+  // Bass staff (bottom 5 lines)
+  for (let i = 0; i < 5; i++) {
+    const y = lineSpacing * (7 + i);
+    ctx.beginPath();
+    ctx.moveTo(0, y);
+    ctx.lineTo(canvas.width, y);
+    ctx.stroke();
+  }
+
+  // Sample notes for scale reference
+  ctx.fillStyle = "#000";
+
+  // Treble note
+  ctx.beginPath();
+  ctx.ellipse(
+    canvas.width * 0.65,
+    lineSpacing * 4.5,
+    noteRadius,
+    noteRadius * 0.75,
+    0,
+    0,
+    Math.PI * 2
+  );
+  ctx.fill();
+
+  // Bass note
+  ctx.beginPath();
+  ctx.ellipse(
+    canvas.width * 0.35,
+    lineSpacing * 9.5,
+    noteRadius,
+    noteRadius * 0.75,
+    0,
+    0,
+    Math.PI * 2
+  );
+  ctx.fill();
+}
+
+window.addEventListener("resize", resize);
+resize();
+</script>
+
+</body>
+</html>
