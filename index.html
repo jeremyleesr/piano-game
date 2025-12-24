@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Grand Staff – Geometry Locked</title>
+
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: #0f3324;
+    overflow: hidden;
+  }
+
+  canvas {
+    display: block;
+  }
+</style>
+</head>
+
+<body>
+<canvas id="c"></canvas>
+
+<script>
+const canvas = document.getElementById("c");
+const ctx = canvas.getContext("2d");
+
+function resize() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  draw();
+}
+
+window.addEventListener("resize", resize);
+resize();
+
+function draw() {
+  const W = canvas.width;
+  const H = canvas.height;
+
+  ctx.clearRect(0, 0, W, H);
+
+  /* ==== STAFF GEOMETRY ==== */
+  const staffTop = 0;
+  const staffHeight = H * 0.38; // 🔒 locked
+  const staffBottom = staffTop + staffHeight;
+
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(0, staffTop, W, staffHeight);
+
+  const linesPerStaff = 5;
+  const staffGapRatio = 0.6; // fixed middle gap
+  const totalLineGaps = (linesPerStaff - 1) * 2 + staffGapRatio;
+  const space = staffHeight / totalLineGaps;
+
+  const topStaffY = staffTop + space * 0.5;
+  const bottomStaffY = topStaffY + space * (linesPerStaff - 1 + staffGapRatio);
+
+  ctx.strokeStyle = "#000";
+  ctx.lineWidth = 2;
+
+  function drawStaff(startY) {
+    for (let i = 0; i < linesPerStaff; i++) {
+      const y = startY + i * space;
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(W, y);
+      ctx.stroke();
+    }
+  }
+
+  drawStaff(topStaffY);
+  drawStaff(bottomStaffY);
+
+  /* ==== HIT ZONE ==== */
+  const hitZoneWidth = W * 0.08;
+  const hitZoneX = W * 0.58;
+
+  ctx.fillStyle = "rgba(160,150,255,0.35)";
+  ctx.fillRect(hitZoneX, staffTop, hitZoneWidth, staffHeight);
+
+  /* ==== DAMAGE OVERLAYS (4 × 25%) ==== */
+  const overlayWidth = hitZoneX / 4;
+  ctx.fillStyle = "rgba(20,40,30,0.45)";
+  ctx.fillRect(0, staffTop, overlayWidth, staffHeight); // show 1 damage for demo
+
+  /* ==== NOTES ==== */
+  const noteRadius = space * 0.45;
+
+  function drawNote(x, y) {
+    ctx.fillStyle = "#000";
+    ctx.beginPath();
+    ctx.ellipse(x, y, noteRadius, noteRadius * 0.75, 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // Demo notes
+  drawNote(W * 0.35, topStaffY + space * 2.5);
+  drawNote(W * 0.75, bottomStaffY + space * 1.5);
+}
+
+draw();
+</script>
+</body>
+</html>
