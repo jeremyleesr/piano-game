@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Piano Battle - Stage 1</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #1a3320; /* Dark battlefield green */
+            overflow: hidden;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        /* THE STAGE: Limited to 40% height */
+        #music-stage {
+            width: 100%;
+            height: 40vh; 
+            background-color: white;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            /* This creates the 1 top, 2 middle, 1 bottom blank spaces */
+            padding-top: 4vh;    /* Top Space */
+            padding-bottom: 4vh; /* Bottom Space */
+            box-sizing: border-box;
+            border-bottom: 5px solid #000;
+        }
+
+        /* THE STAFF: 5 lines exactly */
+        .staff-group {
+            flex: 1;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            margin: 0 20px;
+        }
+
+        /* Space between Treble and Bass */
+        .staff-gap {
+            height: 8vh; /* The 2-blank space middle gap */
+        }
+
+        .lines {
+            width: 100%;
+            height: 60px; /* Fixed height for 5 lines */
+            /* Draws exactly 5 lines */
+            background: linear-gradient(to bottom, 
+                #000 2px, transparent 2px 24%, 
+                #000 2px 25%, transparent 2px 49%, 
+                #000 2px 50%, transparent 2px 74%, 
+                #000 2px 75%, transparent 2px 99%, 
+                #000 2px);
+            background-size: 100% 15px;
+            position: relative;
+        }
+
+        .clef {
+            position: absolute;
+            left: -10px;
+            top: -10px;
+            font-size: 50px;
+            font-weight: bold;
+            color: #000;
+        }
+
+        #hit-zone {
+            position: absolute;
+            left: 15%;
+            top: 0;
+            width: 60px;
+            height: 100%;
+            background-color: rgba(0, 0, 255, 0.15);
+            border-left: 3px solid blue;
+            border-right: 3px solid blue;
+            z-index: 10;
+        }
+
+        #battlefield {
+            width: 100%;
+            height: 60vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="music-stage">
+        <div id="hit-zone"></div>
+        
+        <div class="staff-group">
+            <div class="clef" style="top: -15px;">𝄞</div>
+            <div class="lines"></div>
+        </div>
+
+        <div class="staff-gap"></div>
+
+        <div class="staff-group">
+            <div class="clef" style="top: -5px;">𝄢</div>
+            <div class="lines"></div>
+        </div>
+    </div>
+
+    <div id="battlefield">
+        <h2 id="status-text">BATTLEFIELD READY</h2>
+        <p>Waiting for Cannon Munitions...</p>
+    </div>
+
+</body>
+</html>
