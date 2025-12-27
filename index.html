@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Keyboard Game - Stage 1</title>
+
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: #0f3324; /* Dark Green Battlefield */
+    overflow: hidden;
+    width: 100%;
+    height: 100%;
+  }
+
+  canvas {
+    display: block;
+  }
+
+  #portraitLock {
+    position: fixed;
+    inset: 0;
+    background: #0f3324;
+    color: #ffffff;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-family: sans-serif;
+    z-index: 10;
+  }
+</style>
+</head>
+
+<body>
+<div id="portraitLock">
+  <div><strong>Landscape Only</strong><br>Rotate your phone</div>
+</div>
+
+<canvas id="c"></canvas>
+
+<script>
+const canvas = document.getElementById("c");
+const ctx = canvas.getContext("2d");
+const portraitLock = document.getElementById("portraitLock");
+
+function resize() {
+  const W = window.innerWidth;
+  const H = window.innerHeight;
+
+  if (H > W) {
+    portraitLock.style.display = "flex";
+    canvas.style.display = "none";
+    return;
+  } else {
+    portraitLock.style.display = "none";
+    canvas.style.display = "block";
+  }
+
+  canvas.width = W;
+  canvas.height = H;
+  drawGame();
+}
+
+window.addEventListener("resize", resize);
+// Initial call
+resize();
+
+function drawGame() {
+  const W = canvas.width;
+  const H = canvas.height;
+  ctx.clearRect(0, 0, W, H);
+
+  // --- 1. THE STAFF PLATE (Top 40%) ---
+  const plateHeight = H * 0.40; 
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(0, 0, W, plateHeight);
+
+  // --- 2. STAFF GEOMETRY (The "Bolted" Lines) ---
+  const centerY = plateHeight / 2;
+  const lineSpacing = plateHeight / 14; 
+  const staffGap = lineSpacing * 2.5; // Gap between Treble and Bass
+
+  ctx.strokeStyle = "#000";
+  ctx.lineWidth = 2;
+
+  function drawStaffGroup(startY) {
+    for (let i = 0; i < 5; i++) {
+      const y = startY + (i * lineSpacing);
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(W, y);
+      ctx.stroke();
+    }
+  }
+
+  // Draw Treble Lines
+  const trebleTop = centerY - staffGap - (lineSpacing * 4);
+  drawStaffGroup(trebleTop);
+
+  // Draw Bass Lines
+  const bassTop = centerY + staffGap;
+  drawStaffGroup(bassTop);
+
+  // --- 3. THE HIT ZONE ---
+  // Positioned on the left where the player hits the notes
+  ctx.fillStyle = "rgba(100, 100, 255, 0.3)";
+  ctx.fillRect(W * 0.15, 0, 60, plateHeight);
+
+  // --- 4. BATTLEFIELD LABELS (Visual Guide for you) ---
+  ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
+  ctx.font = "20px Arial";
+  ctx.fillText("BATTLEFIELD AREA (CANNONS GO HERE)", W/2 - 150, H * 0.7);
+  
+  // --- 5. CLEF PLACEHOLDERS ---
+  ctx.fillStyle = "black";
+  ctx.font = "30px serif";
+  ctx.fillText("𝄞", 20, trebleTop + (lineSpacing * 3)); // Treble Clef
+  ctx.fillText("𝄢", 20, bassTop + (lineSpacing * 2));   // Bass Clef
+}
+</script>
+</body>
+</html>
