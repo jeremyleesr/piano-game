@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Keyboard Game - Stage 1</title>
+    <style>
+        /* 1. STAGE SETUP */
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #1a3320; /* Dark green background */
+            overflow: hidden; /* Prevents scrolling */
+            font-family: sans-serif;
+        }
+
+        /* 2. THE PERMANENT STAFF CONTAINER */
+        #music-stage {
+            width: 100%;
+            height: 40vh; /* Takes up 40% of the top of the screen */
+            background-color: white;
+            position: relative;
+            border-bottom: 4px solid #000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        /* 3. DRAWING THE LINES (The Staff) */
+        .staff {
+            height: 80px;
+            margin: 20px 0;
+            position: relative;
+            /* This creates the 5 lines of a musical staff */
+            background: linear-gradient(to bottom, 
+                #000 1px, transparent 1px 19%, 
+                #000 1px 20%, transparent 1px 39%, 
+                #000 1px 40%, transparent 1px 59%, 
+                #000 1px 60%, transparent 1px 79%, 
+                #000 1px 80%, transparent 81%);
+            background-size: 100% 20px;
+        }
+
+        /* 4. THE HIT ZONE (The Blue Column) */
+        #hit-zone {
+            position: absolute;
+            left: 15%; /* Position where the notes must be hit */
+            top: 0;
+            width: 60px;
+            height: 100%;
+            background-color: rgba(100, 100, 255, 0.3); /* Transparent blue */
+            border-left: 2px solid blue;
+            border-right: 2px solid blue;
+            z-index: 10;
+        }
+
+        /* 5. THE BATTLEFIELD (Bottom half) */
+        #battlefield {
+            width: 100%;
+            height: 60vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: rgba(255,255,255,0.5);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .clef-label {
+            position: absolute;
+            left: 10px;
+            font-size: 30px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="music-stage">
+        <div id="hit-zone"></div>
+        
+        <div class="staff">
+            <span class="clef-label" style="top: -10px;">&oint;</span> </div>
+
+        <div class="staff">
+            <span class="clef-label" style="top: -10px;">&quest;</span> </div>
+    </div>
+
+    <div id="battlefield">
+        <h2>Battlefield Area (Cannons Go Here)</h2>
+    </div>
+
+</body>
+</html>
