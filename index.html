@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Piano Battle - Stage 1</title>
+    <style>
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            background-color: #1a3320; overflow: hidden;
+            font-family: 'Courier New', Courier, monospace;
+            user-select: none;
+        }
+
+        /* 1. STAFF AREA (35% Height) */
+        #music-stage {
+            width: 100%; height: 35vh; background-color: white;
+            position: relative; display: flex; flex-direction: column;
+            justify-content: center; box-sizing: border-box; 
+            border-bottom: 5px solid #000;
+        }
+
+        .staff-group {
+            height: 10vh; position: relative; margin-left: 60px;
+            border-top: 2px solid black; border-bottom: 2px solid black;
+            background-image: linear-gradient(black 2px, transparent 2px);
+            background-size: 100% 25%; /* Creates 5 lines exactly */
+        }
+
+        /* THE CLEAR GAP IN THE MIDDLE */
+        .staff-gap { height: 6vh; background-color: white; }
+
+        .clef {
+            position: absolute; left: -50px; height: 100%;
+            display: flex; align-items: center; font-size: 8vh; color: #000;
+        }
+
+        #hit-zone {
+            position: absolute; left: 25%; top: 0; width: 60px; height: 100%;
+            background-color: rgba(0, 0, 255, 0.1);
+            border-left: 4px solid blue; border-right: 4px solid blue; z-index: 10;
+        }
+
+        /* 2. BATTLEFIELD (65% Height) */
+        #battlefield {
+            width: 100%; height: 65vh; position: relative;
+            display: flex; flex-direction: column; align-items: center;
+        }
+
+        .instruction-box {
+            background: rgba(0,0,0,0.9); padding: 15px; border-radius: 10px;
+            border: 2px solid #fff; width: 90%; text-align: center; color: white;
+            margin-top: 2vh;
+        }
+
+        .study-key { display: flex; justify-content: space-around; background: #333; padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .button-container { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 10px; }
+        .game-btn { padding: 15px 0; font-size: 0.8rem; font-weight: bold; background: #ffcc00; color: #000; border: 2px solid #000; border-radius: 5px; }
+        #back-btn { display: none; margin-top: 10px; padding: 10px 20px; background: #ff4444; color: white; border: none; border-radius: 5px; z-index: 20; }
+
+        /* REFINED NOTE STYLING */
+        .note {
+            position: absolute; width: 2.5vh; height: 2.2vh; /* Scaled to fit staff space */
+            background-color: black; border-radius: 50%;
+            right: -50px; z-index: 5;
+            display: flex; align-items: center; justify-content: center;
+            color: white; font-weight: bold; font-size: 1.5vh;
+        }
+
+        .note-letter {
+            position: absolute; top: -3vh; color: black; font-size: 1.8vh; font-weight: bold;
+        }
+
+        .hit { background-color: #00ff00 !important; box-shadow: 0 0 10px #00ff00; color: black; }
+        #battle-label { display: none; font-size: 1.5rem; color: #ffcc00; font-weight: bold; margin-top: 10px; }
+    </style>
+</head>
+<body>
+
+    <div id="music-stage">
+        <div id="hit-zone"></div>
+        
+        <div class="staff-group" id="treble-staff">
+            <div class="clef">𝄞</div>
+        </div>
+
+        <div class="staff-gap"></div>
+
+        <div class="staff-group" id="bass-staff">
+            <div class="clef">𝄢</div>
+        </div>
+    </div>
+
+    <div id="battlefield">
+        <h2 id="battle-label">BATTLE ACTIVE</h2>
+        <button id="back-btn" onclick="stopGame()">BACK TO MENU</button>
+
+        <div class="instruction-box" id="ui-box">
+            <h2 style="margin: 0;">STAGE SELECT</h2>
+            <div id="study-area" class="study-key">
+                <div>C (1)</div><div>E (3)</div><div>G (5)</div>
+            </div>
+            <div class="button-container">
+                <button class="game-btn" onclick="startGame('GO')">GO</button>
+                <button class="game-btn" onclick="startGame('FIGHT')">FIGHT</button>
+                <button class="game-btn" onclick="startGame('WIN')">WIN</button>
+                <button class="game-btn" onclick="startGame('!!!!')">!!!!</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let spawnInterval;
+        const noteData = [
+            { pos: 100, letter: 'C', finger: '1' },
+            { pos: 75,  letter: 'E', finger: '3' },
+            { pos: 50,  letter: 'G', finger: '5' }
+        ];
+
+        function startGame(mode) {
+            document.getElementById('ui-box').style.display = 'none';
+            document.getElementById('battle-label').style.display = 'block';
+            document.getElementById('back-btn').style.display = 'block';
+            document.getElementById('battle-label').innerText = "MODE: " + mode;
+
+            // Speed tiering
+            let speed = 4; // GO/FIGHT
+            if (mode === 'WIN') speed = 7;
+            if (mode === '!!!!') speed = 10;
+
+            spawnInterval = setInterval(() => {
+                const config = noteData[Math.floor(Math.random() * noteData.length)];
+                let showHints = (mode === 'GO' || mode === 'FIGHT');
+                
+                if (mode === 'GO' || mode === 'WIN' || mode === '!!!!') 
+                    spawnNote('bass-staff', speed, config, showHints);
+                
+                if (mode === 'FIGHT' || mode === 'WIN' || mode === '!!!!') 
+                    setTimeout(() => spawnNote('treble-staff', speed, config, showHints), 700);
+            }, 2000);
+        }
+
+        function stopGame() {
+            clearInterval(spawnInterval);
+            document.getElementById('ui-box').style.display = 'block';
+            document.getElementById('battle-label').style.display = 'none';
+            document.getElementById('back-btn').style.display = 'none';
+            document.querySelectorAll('.note').forEach(n => n.remove());
+        }
+
+        function spawnNote(staffId, speed, config, showHints) {
+            const staff = document.getElementById(staffId);
+            const note = document.createElement('div');
+            note.className = 'note';
+            
+            if (showHints) {
+                note.innerText = config.finger;
+                const letterBox = document.createElement('div');
+                letterBox.className = 'note-letter';
+                letterBox.innerText = config.letter;
+                note.appendChild(letterBox);
+            }
+
+            note.style.top = config.pos + '%';
+            note.style.transform = 'translateY(-50%)';
+            staff.appendChild(note);
+
+            let pos = -50;
+            const hitZoneLeft = window.innerWidth * 0.25;
+            const hitZoneRight = hitZoneLeft + 60;
+
+            const moveInterval = setInterval(() => {
+                pos += speed;
+                note.style.right = pos + 'px';
+                const noteRect = note.getBoundingClientRect();
+                
+                if (noteRect.left > hitZoneLeft && noteRect.left < hitZoneRight) {
+                    note.classList.add('hit');
+                }
+
+                if (noteRect.left < 0) {
+                    clearInterval(moveInterval);
+                    note.remove();
+                }
+            }, 20);
+        }
+    </script>
+</body>
+</html>
