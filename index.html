@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Piano Battle - Stage 1</title>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    
+    <style>
+        :root {
+            --staff-height: 18vh; 
+            --note-size: 4.2vh; 
+        }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background-color: #1a3320; overflow: hidden; font-family: 'Courier New', Courier, monospace; }
+
+        #fs-overlay {
+            position: fixed; inset: 0; background: #1a3320; z-index: 200;
+            display: flex; flex-direction: column; justify-content: center; align-items: center; color: white;
+        }
+
+        #rotate-message { display: none; position: fixed; inset: 0; background: #000; color: #fff; z-index: 100; text-align: center; flex-direction: column; justify-content: center; align-items: center; }
+        @media (orientation: portrait) { #rotate-message { display: flex; } }
+
+        #music-stage {
+            width: 100%; height: 55vh; background-color: white;
+            position: relative; display: flex; flex-direction: column;
+            justify-content: flex-start; padding-top: 2vh; border-bottom: 5px solid #000;
+        }
+        .staff-group {
+            height: var(--staff-height); position: relative; 
+            margin-left: 120px;
+            border-top: 3px solid black; border-bottom: 3px solid black;
+            background-image: linear-gradient(black 3px, transparent 3px);
+            background-size: 100% 25%;
+        }
+        
+        /* Narrowed the gap by about 1 space height */
+        .staff-gap { height: 8vh; background-color: white; }
+
+        .clef { position: absolute; left: -80px; height: 100%; display: flex; align-items: center; font-size: 10vh; color: black; }
+        
+        #hit-zone {
+            position: absolute; left: 35%; top: 0; width: 80px; height: 100%;
+            background-color: rgba(0, 0, 255, 0.1); border-left: 4px solid blue; border-right: 4px solid blue; z-index: 10;
+        }
+
+        #live-dashboard { display: none; width: 100%; height: 8vh; background: #222; border-bottom: 2px solid #ffcc00; justify-content: space-around; align-items: center; color: white; font-size: 1rem; }
+        #battlefield { width: 100%; height: 37vh; display: flex; flex-direction: column; align-items: center; }
+        
+        .instruction-box { background: rgba(0,0,0,0.9); padding: 10px; border-radius: 10px; border: 2px solid #fff; width: 90%; text-align: center; color: white; margin-top: 5px; }
+        .button-container { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 10px; }
+        .game-btn { padding: 15px 0; font-weight: bold; background: #ffcc00; border: 2px solid #000; border-radius: 8px; font-size: 1.1rem; }
+        #back-btn { display: none; margin-top: 5px; padding: 8px 20px; background: #ff4444; color: white; border: none; border-radius: 5px; font-weight: bold; }
+
+        /* NOTE & STEM STYLING */
+        .note {
+            position: absolute; width: var(--note-size); height: var(--note-size);
+            background-color: black; border-radius: 50%; right: -80px; z-index: 5;
+            display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 2.2vh;
+        }
+
+        /* The vertical stem line */
+        .stem {
+            position: absolute; width: 3px; height: 7vh; background: black;
+        }
+        .stem-up { bottom: 50%; left: 90%; }
+        .stem-down { top: 50%; right: 90%; }
+
+        .hit { background-color: #00ff00 !important; box-shadow: 0 0 20px #00ff00; color: black; }
+        .hit .stem { background: #00ff00; }
+    </style>
+</head>
+<body>
+
+    <div id="fs-overlay">
+        <h1 style="color:#ffcc00;">PIANO BATTLE</h1>
+        <button onclick="enterGame()" style="padding: 20px 40px; font-size: 1.5rem; background: #ffcc00; border: 4px solid black; border-radius: 15px; font-weight: bold;">START GAME</button>
+    </div>
+
+    <div id="rotate-message"><h2>PLEASE ROTATE</h2><p>Landscape mode required</p></div>
+
+    <div id="music-stage">
+        <div id="hit-zone"></div>
+        <div class="staff-group" id="treble-staff"><div class="clef">𝄞</div></div>
+        <div class="staff-gap"></div>
+        <div class="staff-group" id="bass-staff"><div class="clef">𝄢</div></div>
+    </div>
+
+    <div id="live-dashboard">
+        <div>1=THUMB</div>
+        <div>LINE: <span style="background:white;color:black;padding:0 5px">B (3)</span></div>
+        <div>SPACE: <span style="background:white;color:black;padding:0 5px">A (2)</span></div>
+    </div>
+
+    <div id="battlefield">
+        <button id="back-btn" onclick="stopGame()">BACK TO MENU</button>
+        <div class="instruction-box" id="ui-box">
+            <div class="button-container">
+                <button class="game-btn" onclick="startGame('GO')">GO</button>
+                <button class="game-btn" onclick="startGame('FIGHT')">FIGHT</button>
+                <button class="game-btn" onclick="startGame('WIN')">WIN</button>
+                <button class="game-btn" onclick="startGame('!!!!')">!!!!</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let spawnTimer;
+        // Logic: 0, 50, 100 are lines. 25, 75 are spaces.
+        const notes = [
+            {pos: 0, f: '1'}, {pos: 25, f: '2'}, {pos: 50, f: '3'}, {pos: 75, f: '4'}, {pos: 100, f: '5'}
+        ];
+
+        function enterGame() {
+            const doc = document.documentElement;
+            if (doc.requestFullscreen) doc.requestFullscreen();
+            else if (doc.webkitRequestFullscreen) doc.webkitRequestFullscreen();
+            document.getElementById('fs-overlay').style.display = 'none';
+        }
+
+        function startGame(mode) {
+            document.getElementById('ui-box').style.display = 'none';
+            document.getElementById('back-btn').style.display = 'block';
+            if (mode !== '!!!!') document.getElementById('live-dashboard').style.display = 'flex';
+
+            let duration = (mode === 'GO') ? 6 : (mode === 'FIGHT' ? 4.5 : (mode === 'WIN' ? 3.5 : 2.5));
+
+            spawnTimer = setInterval(() => {
+                const config = notes[Math.floor(Math.random() * notes.length)];
+                let hints = (mode === 'GO' || mode === 'FIGHT');
+                if (mode !== 'FIGHT') spawnNote('bass-staff', duration, config, hints, 'down');
+                if (mode !== 'GO') setTimeout(() => spawnNote('treble-staff', duration, config, hints, 'up'), 1100);
+            }, 2600);
+        }
+
+        function stopGame() {
+            clearInterval(spawnTimer);
+            document.getElementById('ui-box').style.display = 'block';
+            document.getElementById('back-btn').style.display = 'none';
+            document.getElementById('live-dashboard').style.display = 'none';
+            document.querySelectorAll('.note').forEach(n => n.remove());
+        }
+
+        function spawnNote(staffId, duration, config, showHints, stemDir) {
+            const staff = document.getElementById(staffId);
+            const note = document.createElement('div');
+            note.className = 'note';
+            if (showHints) note.innerText = config.f;
+            
+            // Add the stem
+            const stem = document.createElement('div');
+            stem.className = 'stem ' + (stemDir === 'up' ? 'stem-up' : 'stem-down');
+            note.appendChild(stem);
+
+            note.style.top = config.pos + '%';
+            note.style.transform = 'translateY(-50%)';
+            staff.appendChild(note);
+
+            const startTime = performance.now();
+            const startPos = -100;
+            const endPos = window.innerWidth + 250;
+            const hitL = window.innerWidth * 0.35; 
+            const hitR = hitL + 80;
+
+            function animate(time) {
+                if (!note.parentElement) return;
+                const progress = (time - startTime) / (duration * 1000);
+                note.style.right = (startPos + (endPos * progress)) + 'px';
+
+                const r = note.getBoundingClientRect();
+                if (r.left > hitL && r.left < hitR) note.classList.add('hit');
+
+                if (progress < 1) requestAnimationFrame(animate);
+                else note.remove();
+            }
+            requestAnimationFrame(animate);
+        }
+    </script>
+</body>
+</html>
