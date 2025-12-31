@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Piano Battle: Reefer Edition</title>
+    <style>
+        :root {
+            --staff-height: 18vh;
+            --note-size: 4.2vh;
+        }
+
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #000; font-family: 'Courier New', monospace; }
+
+        /* THE BATTLEFIELD (Bottom Layer) */
+        #battlefield-layer {
+            position: absolute; inset: 0; background: linear-gradient(#87CEEB, #e0f7fa); z-index: 5;
+            display: flex; flex-direction: column; justify-content: flex-end; align-items: center;
+        }
+
+        #target-wall {
+            width: 85%; height: 55%; background: #444; border: 8px solid #222;
+            margin-bottom: 2vh; display: flex; justify-content: center; align-items: center;
+            color: #ffcc00; font-size: 1.5rem; text-align: center;
+        }
+
+        #cannon-container { position: absolute; bottom: 15vh; z-index: 15; text-align: center; }
+        #cannon-body { font-size: 90px; transform: rotate(-90deg); display: inline-block; }
+        #ground { width: 100%; height: 25vh; background: #2d5a27; border-top: 6px solid #1a3320; }
+
+        /* THE WAREHOUSE (The sliding curtain) */
+        #warehouse-layer {
+            position: absolute; inset: 0; background: white; z-index: 20;
+            transition: transform 1.5s cubic-bezier(0.645, 0.045, 0.355, 1);
+        }
+
+        #music-stage { height: 55vh; display: flex; flex-direction: column; padding-top: 2vh; border-bottom: 4px solid black; }
+        .staff-group { height: var(--staff-height); position: relative; margin-left: 120px; border-top: 3px solid black; border-bottom: 3px solid black; background-image: linear-gradient(black 3px, transparent 3px); background-size: 100% 25%; }
+        .clef { position: absolute; left: -80px; height: 100%; display: flex; align-items: center; font-size: 10vh; color: black; }
+        #hit-zone { position: absolute; left: 35%; top: 0; width: 85px; height: 100%; background: rgba(0, 0, 255, 0.1); border-left: 4px solid blue; border-right: 4px solid blue; }
+
+        /* THE TRUCK (Using your photo dimensions) */
+        #truck-sprite {
+            position: absolute; 
+            left: -800px; /* Start way off screen left */
+            bottom: 5vh; 
+            z-index: 30;
+            width: 450px; 
+            height: auto;
+            transition: left 2s ease-in-out;
+            font-size: 100px; /* Placeholder Emoji size */
+        }
+
+        /* WORKBENCH */
+        #workbench { position: absolute; left: 45%; bottom: 8vh; font-size: 60px; z-index: 21; }
+
+        /* UI */
+        #ui-layer { position: fixed; bottom: 5vh; width: 100%; display: flex; justify-content: center; z-index: 100; pointer-events: none; }
+        .game-btn { pointer-events: auto; padding: 18px 35px; background: #ffcc00; border: 4px solid black; border-radius: 12px; font-weight: bold; font-size: 1.1rem; box-shadow: 0 4px #997a00; }
+        .game-btn:active { transform: translateY(2px); box-shadow: 0 2px #997a00; }
+    </style>
+</head>
+<body>
+
+    <div id="battlefield-layer">
+        <div id="target-wall">
+            <span>READY TO BATTLE<br>JJ vs THE WALL</span>
+        </div>
+        <div id="cannon-container">
+            <div id="cannon-body">🚀</div>
+        </div>
+        <div id="ground"></div>
+    </div>
+
+    <div id="warehouse-layer">
+        <div id="music-stage">
+            <div id="hit-zone"></div>
+            <div class="staff-group"><div class="clef">𝄞</div></div>
+            <div style="height:8vh"></div>
+            <div class="staff-group"><div class="clef">𝄢</div></div>
+        </div>
+        <div id="workbench">🏗️</div>
+    </div>
+
+    <div id="truck-sprite">🚛</div>
+
+    <div id="ui-layer">
+        <button id="main-action" class="game-btn" onclick="runSequence()">START BUILD</button>
+    </div>
+
+    <script>
+        function runSequence() {
+            const btn = document.getElementById('main-action');
+            const truck = document.getElementById('truck-sprite');
+            const warehouse = document.getElementById('warehouse-layer');
+
+            if (btn.innerText === "START BUILD") {
+                // Here we would run the note-spawning "Assembly"
+                btn.innerText = "LOAD REEFER";
+            } else if (btn.innerText === "LOAD REEFER") {
+                // 1. Truck pulls into view from the left
+                truck.style.left = "25%";
+                btn.innerText = "DELIVER AMMO";
+                
+            } else {
+                // 2. Truck drives forward off-screen right
+                truck.style.left = "115%";
+                
+                // 3. Synchronized: Warehouse slides left to show Battlefield
+                setTimeout(() => {
+                    warehouse.style.transform = "translateX(-110%)";
+                    btn.style.display = "none";
+                }, 400);
+            }
+        }
+    </script>
+</body>
+</html>
