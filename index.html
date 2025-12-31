@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Piano Battle: Fixed Frame</title>
+    <style>
+        :root {
+            --staff-h: 18vh;
+            --note-sz: 4.2vh;
+        }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #1a3320; font-family: 'Courier New', monospace; }
+
+        /* THE FIXED CONTAINER - Stops Safari Scaling */
+        #game-container { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+
+        /* SCENE 1: WAREHOUSE (Top Layer) */
+        #warehouse-scene {
+            position: absolute; inset: 0; background: white; z-index: 20;
+            transition: transform 1.2s ease-in-out;
+        }
+        #staff-area { height: 50vh; border-bottom: 4px solid #000; position: relative; }
+        .staff-group { height: var(--staff-h); position: relative; margin-left: 100px; border-top: 3px solid black; border-bottom: 3px solid black; background-image: linear-gradient(black 3px, transparent 3px); background-size: 100% 25%; }
+        .clef { position: absolute; left: -70px; height: 100%; display: flex; align-items: center; font-size: 8vh; }
+        #hit-zone { position: absolute; left: 30%; top: 0; width: 70px; height: 100%; background: rgba(0, 0, 255, 0.15); border-left: 3px solid blue; border-right: 3px solid blue; }
+        #bench { position: absolute; right: 5%; bottom: 5vh; font-size: 50px; }
+
+        /* SCENE 2: BATTLEFIELD (Behind) */
+        #battle-scene {
+            position: absolute; inset: 0; background: #87CEEB; z-index: 10;
+            display: flex; flex-direction: column; align-items: center;
+        }
+        #target-wall { 
+            width: 70%; height: 40%; background: #444; border: 6px solid #222; 
+            margin-top: 5vh; display: flex; justify-content: center; align-items: center; 
+            color: yellow; font-weight: bold; text-align: center;
+        }
+        #ground { position: absolute; bottom: 0; width: 100%; height: 30vh; background: #2d5a27; border-top: 5px solid #1a3320; }
+        #cannon { position: absolute; bottom: 18vh; font-size: 80px; transform: rotate(-90deg); z-index: 15; }
+
+        /* THE TRUCK (Moves independently) */
+        #truck { 
+            position: absolute; left: 5%; bottom: 8vh; z-index: 30; 
+            font-size: 90px; transition: left 2s ease-in-out; 
+        }
+
+        /* UI */
+        #ui { position: fixed; bottom: 5vh; width: 100%; display: flex; justify-content: center; z-index: 100; pointer-events: none; }
+        .btn { pointer-events: auto; padding: 15px 30px; background: #ffcc00; border: 4px solid #000; border-radius: 12px; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <div id="battle-scene">
+        <div id="target-wall">WALL READY<br>(Video Portal)</div>
+        <div id="cannon">🚀</div>
+        <div id="ground"></div>
+    </div>
+
+    <div id="warehouse-scene">
+        <div id="staff-area">
+            <div id="hit-zone"></div>
+            <div class="staff-group" style="top: 2vh;"><div class="clef">𝄞</div></div>
+            <div class="staff-group" style="top: 10vh;"><div class="clef">𝄢</div></div>
+        </div>
+        <div id="bench">🏗️</div>
+    </div>
+
+    <div id="truck">🚛</div>
+</div>
+
+<div id="ui">
+    <button id="main-btn" class="btn" onclick="nextPhase()">START BUILD</button>
+</div>
+
+<script>
+    let phase = 0;
+    function nextPhase() {
+        const btn = document.getElementById('main-btn');
+        const truck = document.getElementById('truck');
+        const warehouse = document.getElementById('warehouse-scene');
+
+        if (phase === 0) {
+            btn.innerText = "LOAD AMMO";
+            phase++;
+        } else if (phase === 1) {
+            // BACK UP TO BENCH (Move Right)
+            truck.style.left = "65%";
+            btn.innerText = "DELIVER";
+            phase++;
+        } else if (phase === 2) {
+            // DRIVE FORWARD (Move Left)
+            truck.style.left = "-10%"; 
+            
+            // TRANSITION: Staff slides RIGHT as truck hits left edge
+            setTimeout(() => {
+                warehouse.style.transform = "translateX(100%)";
+                // Reposition truck to battlefield side
+                setTimeout(() => {
+                    truck.style.zIndex = "12"; // Put truck behind cannon but on grass
+                    truck.style.left = "75%"; // Pull up next to wall
+                }, 1000);
+            }, 500);
+            btn.style.display = "none";
+        }
+    }
+</script>
+</body>
+</html>
