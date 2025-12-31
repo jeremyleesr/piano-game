@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Piano Battle: Boss Edition</title>
+    <style>
+        :root { --staff-h: 16vh; }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #000; font-family: sans-serif; }
+
+        #game-container { position: relative; width: 100vw; height: 100vh; }
+
+        /* SCENE 1: THE DOCK / WAREHOUSE */
+        #warehouse-scene {
+            position: absolute; inset: 0; background: #eee; z-index: 20;
+            transition: transform 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        #staff-area { height: 45vh; background: white; border-bottom: 8px solid #333; position: relative; }
+        .staff-group { height: var(--staff-h); position: relative; margin-left: 80px; border-top: 3px solid black; border-bottom: 3px solid black; background-image: linear-gradient(black 3px, transparent 3px); background-size: 100% 25%; }
+        #hit-zone { position: absolute; left: 30%; top: 0; width: 70px; height: 100%; background: rgba(0, 0, 255, 0.1); border-left: 3px solid blue; border-right: 3px solid blue; }
+        
+        /* The Loading Dock Floor */
+        #dock-floor { height: 55vh; background: #555; display: flex; justify-content: flex-end; align-items: center; padding-right: 5%; }
+
+        /* SCENE 2: BATTLEFIELD (Boss Perspective) */
+        #battle-scene {
+            position: absolute; inset: 0; background: #87CEEB; z-index: 10;
+            display: flex; flex-direction: column; align-items: center;
+        }
+        #ground { position: absolute; bottom: 0; width: 100%; height: 45vh; background: #2d5a27; }
+        
+        /* THE BOSS WALL - Now grounded */
+        #wall-container {
+            position: absolute; bottom: 35vh; width: 85%; height: 45%;
+            background: #333; border: 10px solid #222; display: grid;
+            grid-template-columns: repeat(5, 1fr); grid-template-rows: repeat(3, 1fr); gap: 2px;
+        }
+        .brick { background: #8B4513; border: 1px solid #5D2E0A; transition: opacity 0.3s; }
+
+        /* CLOSE-UP CANNON */
+        #cannon { position: absolute; bottom: 5vh; font-size: 120px; transform: rotate(-90deg); z-index: 15; text-shadow: 0 10px 20px rgba(0,0,0,0.5); }
+
+        #truck { position: absolute; left: -300px; bottom: 10vh; z-index: 30; font-size: 100px; transition: left 1.5s ease-in-out; }
+
+        #ui { position: fixed; bottom: 5vh; width: 100%; display: flex; justify-content: center; z-index: 100; pointer-events: none; }
+        .btn { pointer-events: auto; padding: 20px 40px; background: #ffcc00; border: 4px solid #000; border-radius: 15px; font-weight: bold; font-size: 1.2rem; }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <div id="battle-scene">
+        <div id="wall-container" id="brick-wall">
+            </div>
+        <div id="cannon">🚀</div>
+        <div id="ground"></div>
+    </div>
+
+    <div id="warehouse-scene">
+        <div id="staff-area">
+            <div id="hit-zone"></div>
+            <div class="staff-group" style="top: 2vh;"><div style="position:absolute;left:-60px;font-size:8vh">𝄞</div></div>
+            <div style="height:4vh"></div>
+            <div class="staff-group"><div style="position:absolute;left:-60px;font-size:8vh">𝄢</div></div>
+        </div>
+        <div id="dock-floor"><div style="font-size:60px">🏗️</div></div>
+    </div>
+
+    <div id="truck">🚛</div>
+</div>
+
+<div id="ui">
+    <button id="main-btn" class="btn" onclick="nextPhase()">START BUILD</button>
+</div>
+
+<script>
+    // Create the bricks for the wall
+    const wall = document.getElementById('wall-container');
+    for(let i=0; i<15; i++) {
+        let b = document.createElement('div');
+        b.className = 'brick';
+        b.id = 'brick-' + i;
+        wall.appendChild(b);
+    }
+
+    let phase = 0;
+    function nextPhase() {
+        const btn = document.getElementById('main-btn');
+        const truck = document.getElementById('truck');
+        const warehouse = document.getElementById('warehouse-scene');
+
+        if (phase === 0) {
+            btn.innerText = "LOAD TRUCK";
+            phase++;
+        } else if (phase === 1) {
+            truck.style.left = "60%"; // Backs into the dock
+            btn.innerText = "DELIVER";
+            phase++;
+        } else if (phase === 2) {
+            truck.style.left = "-20%"; // Drives forward (left)
+            
+            setTimeout(() => {
+                warehouse.style.transform = "translateX(100%)"; // Slide warehouse AWAY
+                setTimeout(() => {
+                    truck.style.zIndex = "11"; 
+                    truck.style.left = "70%"; // Park on the battlefield grass
+                }, 800);
+            }, 500);
+            btn.style.display = "none";
+        }
+    }
+</script>
+</body>
+</html>
