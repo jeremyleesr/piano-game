@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Piano Battle: Warehouse & Portrait Wall</title>
+    <style>
+        :root { --staff-h: 15vh; --dock-h: 22vh; }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #000; font-family: sans-serif; }
+
+        #game-container { position: relative; width: 100vw; height: 100vh; }
+
+        /* SCENE 1: THE BATTLEFIELD (Left & Center) */
+        #battle-scene {
+            position: absolute; inset: 0; background: #87CEEB; z-index: 5;
+            display: flex; flex-direction: column; align-items: flex-start;
+        }
+        
+        /* PORTRAIT WALL: 3x5 Grid for Vertical Video */
+        #wall-container {
+            position: absolute; left: 10%; bottom: var(--dock-h); 
+            width: 35vw; height: 55vh; 
+            background: #222; border: 8px solid #444;
+            display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(5, 1fr); gap: 2px;
+            z-index: 15;
+        }
+        .brick { background: #8B4513; border: 1px solid #5D2E0A; transition: opacity 0.3s; }
+
+        /* THE VIDEO REWEARD (Inside the Wall) */
+        #video-portal {
+            position: absolute; inset: 0; z-index: 10; background: #000;
+        }
+        video { width: 100%; height: 100%; object-fit: cover; }
+
+        #cannon { position: absolute; left: 20%; bottom: 10vh; font-size: 80px; transform: rotate(-90deg); z-index: 20; }
+        #grass { position: absolute; bottom: 0; width: 100%; height: var(--dock-h); background: #2d5a27; border-top: 5px solid #1a3320; }
+
+        /* SCENE 2: OPEN-FACED WAREHOUSE (Right) */
+        #warehouse-building {
+            position: absolute; right: 0; top: 0; width: 50vw; height: 100vh;
+            background: rgba(255,255,255,0.9); border-left: 10px solid #666; z-index: 30;
+            transition: transform 1.2s ease-in-out;
+        }
+        #staff-area { height: 40vh; position: relative; border-bottom: 4px solid #000; }
+        .staff-group { height: var(--staff-h); position: relative; margin-left: 80px; border-top: 3px solid black; border-bottom: 3px solid black; background-image: linear-gradient(black 2px, transparent 2px); background-size: 100% 25%; }
+        #hit-zone { position: absolute; left: 30%; top: 0; width: 60px; height: 100%; background: rgba(0,0,255,0.1); border-left: 3px solid blue; border-right: 3px solid blue; }
+        
+        /* THE ELEVATED DOCK FLOOR */
+        #dock-floor {
+            position: absolute; bottom: 0; width: 100%; height: var(--dock-h);
+            background: #444; border-top: 6px solid #cc0000;
+        }
+        #jj-builder { position: absolute; right: 10%; bottom: 2vh; font-size: 60px; }
+
+        /* THE TRUCK (Moves independently) */
+        #truck { 
+            position: absolute; left: -450px; bottom: 8vh; z-index: 40; 
+            width: 400px; font-size: 90px; transition: all 2s ease-in-out; 
+        }
+
+        /* UI */
+        #ui { position: fixed; bottom: 5vh; width: 100%; display: flex; justify-content: center; z-index: 100; pointer-events: none; }
+        .btn { pointer-events: auto; padding: 20px 40px; background: #ffcc00; border: 4px solid #000; border-radius: 15px; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <div id="battle-scene">
+        <div id="wall-container">
+            <div id="video-portal">
+                <video id="cave-video" loop muted playsinline>
+                    <source src="https://storage.googleapis.com/redirect-video-assets/cave-video.mp4" type="video/mp4">
+                    </video>
+            </div>
+            </div>
+        <div id="cannon">🚀</div>
+        <div id="grass"></div>
+    </div>
+
+    <div id="warehouse-building">
+        <div id="staff-area">
+            <div id="hit-zone"></div>
+            <div class="staff-group" style="margin-top:2vh;"><div style="position:absolute;left:-60px;font-size:8vh">𝄞</div></div>
+            <div style="height:4vh"></div>
+            <div class="staff-group"><div style="position:absolute;left:-60px;font-size:8vh">𝄢</div></div>
+        </div>
+        <div id="dock-floor">
+            <div id="jj-builder">🏗️</div>
+        </div>
+    </div>
+
+    <div id="truck">🚛</div>
+</div>
+
+<div id="ui">
+    <button id="main-btn" class="btn" onclick="runSequence()">START BUILD</button>
+</div>
+
+<script>
+    // Build the Wall
+    const wall = document.getElementById('wall-container');
+    for(let i=0; i<15; i++) {
+        let b = document.createElement('div');
+        b.className = 'brick';
+        wall.appendChild(b);
+    }
+
+    let phase = 0;
+    function runSequence() {
+        const btn = document.getElementById('main-btn');
+        const truck = document.getElementById('truck');
+        const warehouse = document.getElementById('warehouse-building');
+        const video = document.getElementById('cave-video');
+
+        if (phase === 0) {
+            btn.innerText = "LOAD REEFER";
+            phase++;
+        } else if (phase === 1) {
+            // DRIVE PAST WALL AND BACK INTO DOCK
+            truck.style.left = "65%";
+            btn.innerText = "DELIVER AMMO";
+            phase++;
+        } else if (phase === 2) {
+            // DRIVE FORWARD (LEFT)
+            truck.style.left = "-20%";
+            
+            setTimeout(() => {
+                // Handoff: Staff building slides away
+                warehouse.style.transform = "translateX(100%)";
+                video.play(); // Video starts looping behind bricks
+                
+                setTimeout(() => {
+                    truck.style.zIndex = "12";
+                    truck.style.left = "55%"; // Park next to cannon
+                    btn.innerText = "FIRE!";
+                    btn.style.display = "block";
+                    btn.onclick = fireAtWall;
+                }, 1000);
+            }, 500);
+            btn.style.display = "none";
+        }
+    }
+
+    function fireAtWall() {
+        const bricks = document.querySelectorAll('.brick:not(.broken)');
+        if(bricks.length > 0) {
+            const randomBrick = bricks[Math.floor(Math.random() * bricks.length)];
+            randomBrick.style.opacity = '0';
+            randomBrick.classList.add('broken');
+        }
+    }
+</script>
+</body>
+</html>
