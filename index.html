@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>JJ's Mission: Arc Fire</title>
+    <style>
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #000; font-family: sans-serif; }
+        #game-world { width: 100vw; height: 100vh; position: relative; background: #87CEEB; }
+        
+        /* ROAD & GRASS */
+        #ground-container { position: absolute; bottom: 0; width: 100%; height: 35vh; z-index: 10; }
+        #grass-top { height: 10%; background: #2d5a27; }
+        #grey-road { height: 80%; background: #444; border-top: 4px solid #666; border-bottom: 4px solid #666; position: relative; }
+        #grass-bottom { height: 10%; background: #2d5a27; }
+
+        /* TALL PORTRAIT WALL (4x7) */
+        #wall-container {
+            position: absolute; left: 5%; bottom: 30vh; 
+            width: 30vw; height: 65vh; 
+            background: #111; border: 8px solid #333; 
+            display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(7, 1fr); 
+            gap: 2px; z-index: 5;
+        }
+        .brick { background: #8B4513; border: 1px solid #5D2E0A; transition: 0.4s; z-index: 2; }
+        
+        /* CANNON & TRUCK */
+        #cannon-body { position: absolute; right: 10%; top: 5%; font-size: 70px; transform: scaleX(-1); z-index: 20; }
+        #truck { position: absolute; right: 10%; bottom: 5%; font-size: 70px; z-index: 30; }
+
+        /* ARROW BOMB (Ballistics) */
+        .bomb { 
+            position: absolute; width: 25px; height: 25px; background: #ffcc00; 
+            border-radius: 50%; box-shadow: 0 0 10px orange; z-index: 100;
+        }
+
+        /* UI LEFT SIDE */
+        #ui-left { position: fixed; bottom: 10vh; left: 5%; z-index: 200; }
+        .btn { padding: 25px 40px; background: #ffcc00; border: 4px solid #000; border-radius: 15px; font-weight: bold; font-size: 1.5rem; }
+    </style>
+</head>
+<body>
+
+<div id="game-world">
+    <div id="wall-container"></div>
+    <div id="cannon-body">🚀</div>
+    <div id="ground-container">
+        <div id="grass-top"></div>
+        <div id="grey-road">
+             <div id="truck">🚛</div>
+        </div>
+        <div id="grass-bottom"></div>
+    </div>
+    <div id="ui-left">
+        <button class="btn" onclick="fireArcBomb()">FIRE</button>
+    </div>
+</div>
+
+<script>
+    const wall = document.getElementById('wall-container');
+    for(let i=0; i<28; i++) {
+        let b = document.createElement('div');
+        b.className = 'brick';
+        wall.appendChild(b);
+    }
+
+    function fireArcBomb() {
+        const bricks = document.querySelectorAll('.brick:not(.broken)');
+        if (bricks.length === 0) return;
+
+        const bomb = document.createElement('div');
+        bomb.className = 'bomb';
+        document.body.appendChild(bomb);
+
+        const cannon = document.getElementById('cannon-body').getBoundingClientRect();
+        const targetBrick = bricks[Math.floor(Math.random() * bricks.length)];
+        const target = targetBrick.getBoundingClientRect();
+
+        // Start position (Cannon tip)
+        let startX = cannon.left;
+        let startY = cannon.top;
+        
+        // End position (Brick center)
+        let endX = target.left + (target.width / 2);
+        let endY = target.top + (target.height / 2);
+
+        let progress = 0;
+        const speed = 0.02; // Adjust for speed
+        const arcHeight = 150; // How much the bomb "jumps" up
+
+        function animate() {
+            progress += speed;
+            if (progress <= 1) {
+                // Linear X and Y
+                let curX = startX + (endX - startX) * progress;
+                let curY = startY + (endY - startY) * progress;
+                
+                // Add the Arch (Parabola)
+                let jump = Math.sin(Math.PI * progress) * arcHeight;
+                
+                bomb.style.left = curX + 'px';
+                bomb.style.top = (curY - jump) + 'px';
+                
+                requestAnimationFrame(animate);
+            } else {
+                targetBrick.style.opacity = '0';
+                targetBrick.classList.add('broken');
+                bomb.remove();
+            }
+        }
+        animate();
+    }
+</script>
+</body>
+</html>
