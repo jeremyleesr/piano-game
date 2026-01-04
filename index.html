@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>JJ's Mission: The Battle Zone</title>
+    <style>
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #000; font-family: sans-serif; }
+        
+        /* GARAGE MENU */
+        #garage-menu {
+            position: fixed; inset: 0; background: #1a1a1a; color: white;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            z-index: 1000; text-align: center;
+        }
+        .upload-card {
+            background: #333; padding: 20px; border-radius: 15px; margin: 10px; border: 2px solid #ffcc00; width: 85%;
+        }
+
+        /* GAME WORLD */
+        #game-world { display: none; width: 100vw; height: 100vh; position: relative; background: #87CEEB; }
+        
+        /* THE GROUND & ROAD (Based on Sketches) */
+        #ground-container { position: absolute; bottom: 0; width: 100%; height: 28vh; z-index: 10; }
+        #grass-top { height: 15%; background: #2d5a27; }
+        #grey-road { height: 70%; background: #444; border-top: 4px solid #666; border-bottom: 4px solid #666; position: relative; }
+        #grass-bottom { height: 15%; background: #2d5a27; }
+
+        /* TALL PORTRAIT WALL (4x7 Grid) */
+        #wall-container {
+            position: absolute; left: 8%; bottom: 25vh; 
+            width: 32vw; height: 65vh; /* Taller height */
+            background: #111; border: 8px solid #333; 
+            display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(7, 1fr); 
+            gap: 2px; z-index: 5;
+        }
+        .brick { background: #8B4513; border: 1px solid #5D2E0A; transition: transform 0.4s, opacity 0.4s; z-index: 2; }
+        video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1; }
+
+        /* CANNON */
+        #cannon-body { position: absolute; left: 45%; bottom: 12vh; font-size: 80px; transform: rotate(-90deg); z-index: 20; }
+        
+        /* BOMB EFFECT */
+        .bomb { 
+            position: absolute; width: 30px; height: 30px; background: orange; 
+            border-radius: 50%; border: 2px solid yellow; z-index: 100; transition: all 0.5s ease-in; 
+        }
+
+        /* TRUCK */
+        #truck { position: absolute; left: -250px; bottom: 4vh; font-size: 70px; transition: left 2s ease-in-out; z-index: 30; }
+
+        /* BUTTONS */
+        .btn { pointer-events: auto; padding: 15px 30px; background: #ffcc00; border: 3px solid #000; border-radius: 10px; font-weight: bold; font-size: 1.2rem; }
+        #ui-layer { position: fixed; bottom: 4vh; right: 5%; z-index: 200; display: none; }
+    </style>
+</head>
+<body>
+
+<div id="garage-menu">
+    <h2>JJ'S MISSION GARAGE</h2>
+    <div class="upload-card">
+        <h3>SELECT PRIZE VIDEO</h3>
+        <input type="file" id="video-input" accept="video/*">
+    </div>
+    <button class="btn" onclick="startGame()">START MISSION</button>
+</div>
+
+<div id="game-world">
+    <div id="wall-container">
+        <video id="prize-video" loop muted playsinline></video>
+        </div>
+    
+    <div id="cannon-body">🚀</div>
+
+    <div id="ground-container">
+        <div id="grass-top"></div>
+        <div id="grey-road"></div>
+        <div id="grass-bottom"></div>
+    </div>
+
+    <div id="truck">🚛</div>
+
+    <div id="ui-layer">
+        <button id="action-btn" class="btn" onclick="nextAction()">DRIVE TRUCK</button>
+    </div>
+</div>
+
+<script>
+    const wall = document.getElementById('wall-container');
+    for(let i=0; i<28; i++) {
+        let b = document.createElement('div');
+        b.className = 'brick';
+        b.id = 'brick-' + i;
+        wall.appendChild(b);
+    }
+
+    function startGame() {
+        const videoInput = document.getElementById('video-input');
+        const videoElement = document.getElementById('prize-video');
+
+        if (videoInput.files[0]) {
+            videoElement.src = URL.createObjectURL(videoInput.files[0]);
+            videoElement.play();
+        }
+
+        document.getElementById('garage-menu').style.display = 'none';
+        document.getElementById('game-world').style.display = 'block';
+        document.getElementById('ui-layer').style.display = 'block';
+    }
+
+    let phase = 0;
+    function nextAction() {
+        const btn = document.getElementById('action-btn');
+        const truck = document.getElementById('truck');
+
+        if (phase === 0) {
+            truck.style.left = "70%"; // Park by cannon
+            btn.innerText = "FIRE CANNON";
+            phase++;
+        } else {
+            fireBomb();
+        }
+    }
+
+    function fireBomb() {
+        const bricks = document.querySelectorAll('.brick:not(.broken)');
+        if (bricks.length === 0) return;
+
+        // Create Bomb
+        const bomb = document.createElement('div');
+        bomb.className = 'bomb';
+        bomb.style.left = '48%';
+        bomb.style.bottom = '20vh';
+        document.getElementById('game-world').appendChild(bomb);
+
+        // Pick target
+        const target = bricks[Math.floor(Math.random() * bricks.length)];
+        const rect = target.getBoundingClientRect();
+
+        // Launch
+        setTimeout(() => {
+            bomb.style.left = rect.left + 'px';
+            bomb.style.top = rect.top + 'px';
+            
+            setTimeout(() => {
+                target.style.opacity = '0';
+                target.style.transform = 'scale(1.5)';
+                target.classList.add('broken');
+                bomb.remove();
+            }, 500);
+        }, 50);
+    }
+</script>
+</body>
+</html>
